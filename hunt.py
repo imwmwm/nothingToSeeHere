@@ -26,9 +26,17 @@ def main(argv):
 
 
 def huntIp(targetIp):
-    while getGameIp() != targetIp:
-        print("Current game ip is: " + getGameIp() + "...")
+    lastIp = ""
+    while True:
+        currentIp = getGameIp()
+        if currentIp == targetIp:
+            break
+        if currentIp != lastIp:
+            lastIp = currentIp
+            if currentIp != "":
+                print("Current game ip is: " + currentIp + "...")
         time.sleep(1)
+
     print("!!! Found target ip: " + getGameIp() + "!!!")
     print("Killing tiny task...")
     killTinyTask()
