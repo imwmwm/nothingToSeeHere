@@ -5,7 +5,7 @@ import subprocess
 import os
 import time
 
-netstatCommand = 'netstat -anob | Select-String -Pattern D2R.exe -Context 1,0 | findstr :443 | findstr ESTABLISHED | findstr /v 37.244.28.80 | findstr /v 24.105.29.76 | findstr /v 34.117.122.6 | findstr /v 117.52.35.179 | findstr /v 117.52.35.79 | findstr /v 137.221.106.88'
+netstatCommand = 'netstat -anob | Select-String -Pattern D2R.exe -Context 1,0 | findstr :443 | findstr ESTABLISHED | findstr /v 37.244.28.80 | findstr /v 34.117.122.6 | findstr /v 24.105.29.76 | findstr /v 117.52.35.179 | findstr /v 117.52.35.79 | findstr /v 137.221.106.88'
 
 def main(argv):
     try:
@@ -26,28 +26,27 @@ def main(argv):
 
 
 def huntIp(targetIp):
-    lastIp = ""
+    lastIps = []
     while True:
-        currentIp = getGameIp()
-        if currentIp == targetIp:
+        currentIps = getGameIp()
+        if targetIp in currentIps:
             break
-        if currentIp != lastIp:
-            lastIp = currentIp
-            if currentIp != "":
-                print("Current game ip is: " + currentIp + "...")
+        if currentIps != lastIps:
+            lastIps = currentIps
+            if currentIps != []:
+                print("Current game ip is: " + ",".join(currentIps) + "...")
         time.sleep(1)
 
-    print("!!! Found target ip: " + getGameIp() + "!!!")
+    print("!!! Found target ip: " + targetIp + "!!!")
     print("Killing tiny task...")
     killTinyTask()
 
 def getGameIp():
     try:
         netstatOutput = subprocess.check_output("powershell -command " + netstatCommand)
-        assert (len(netstatOutput.splitlines()) <= 1), "Detected multiple lines in the output of netstat: \n" + netstatOutput.decode("utf-8")
-        return netstatOutput.split()[2].decode("utf-8").split(":")[0]
+        return list(map(lambda x: x.split()[2].decode("utf-8").split(":")[0], netstatOutput.splitlines()))
     except subprocess.CalledProcessError as netstatException:
-        return netstatException.output.decode("utf-8")
+        return []
 
 def killTinyTask():
     os.system("taskkill /f /im \"TinyTask.exe\"")
